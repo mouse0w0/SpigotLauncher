@@ -1,4 +1,4 @@
-package spigotlaunchwrapper.plugin;
+package spigotlauncher.plugin;
 
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import spigotlaunchwrapper.Launch;
-import spigotlaunchwrapper.api.CorePlugin;
+import spigotlauncher.Launch;
+import spigotlauncher.api.CorePlugin;
 
 public class PluginLoader {
 

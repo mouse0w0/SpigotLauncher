@@ -1,4 +1,4 @@
-package spigotlaunchwrapper.plugin;
+package spigotlauncher.plugin;
 
 public class PluginException extends RuntimeException {
 

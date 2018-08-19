@@ -1,4 +1,4 @@
-package spigotlaunchwrapper;
+package spigotlauncher;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
-import spigotlaunchwrapper.plugin.PluginContainer;
-import spigotlaunchwrapper.plugin.PluginLoader;
+import spigotlauncher.plugin.PluginContainer;
+import spigotlauncher.plugin.PluginLoader;
 
 public final class Launch {
 

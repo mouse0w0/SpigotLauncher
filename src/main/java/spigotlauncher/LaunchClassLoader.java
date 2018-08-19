@@ -1,6 +1,6 @@
-package spigotlaunchwrapper;
+package spigotlauncher;
 
-import spigotlaunchwrapper.api.Transformer;
+import spigotlauncher.api.Transformer;
 
 import java.io.File;
 import java.io.IOException;

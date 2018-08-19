@@ -1,4 +1,4 @@
-package spigotlaunchwrapper.api;
+package spigotlauncher.api;
 
 import java.nio.file.Path;
 import java.util.Collection;

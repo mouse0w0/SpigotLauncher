@@ -1,4 +1,4 @@
-package spigotlaunchwrapper.plugin;
+package spigotlauncher.plugin;
 
 import java.net.MalformedURLException;
 import java.net.URL;
