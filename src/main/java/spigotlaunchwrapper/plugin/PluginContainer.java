@@ -44,7 +44,7 @@ public class PluginContainer {
 	}
 	
 	void setInstance(CorePlugin instance) {
-		if(instance != null)
+		if(this.instance != null)
 			throw new UnsupportedOperationException("Instance has been set.");
 		this.instance = instance;
 	}

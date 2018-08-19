@@ -55,6 +55,7 @@ public final class Launch {
             printAllPlugin();
 
             acceptOptions(Arrays.asList(args));
+            initTransformers();
 
             Launch.getLogger().info("Launching server...");
             Class<?> craftBukkitMain = Class.forName("org.bukkit.craftbukkit.Main", false, classLoader);
@@ -68,6 +69,12 @@ public final class Launch {
     private static void acceptOptions(List<String> args) {
         for (PluginContainer container : plugins) {
             container.getInstance().acceptOptions(args, serverDir);
+        }
+    }
+
+    private static void initTransformers() {
+        for (PluginContainer container : plugins) {
+            classLoader.addTransformer(container.getInstance().getTransformers());
         }
     }
 
