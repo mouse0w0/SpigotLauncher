@@ -138,42 +138,38 @@ public class LaunchClassLoader extends URLClassLoader {
         return (capacity == nread) ? buf : Arrays.copyOf(buf, nread);
     }
 
-    // @Override
-    // public URL getResource(String name) {
-    // URL resource = findResource(name);
-    // if (resource != null)
-    // return resource;
-    //
-    // return super.getResource(name);
-    // }
-    //
-    // @Override
-    // public Class<?> loadClass(String name) throws ClassNotFoundException {
-    // synchronized (getClassLoadingLock(name)) {
-    // if (name.startsWith(JAVA_PACKAGE_PREFIX)) {
-    // return findSystemClass(name);
-    // }
-    //
-    // Class<?> loadedClass;
-    //
-    // loadedClass = findLoadedClass(name);
-    // if (loadedClass != null) {
-    // return loadedClass;
-    // }
-    //
-    // try {
-    // return super.loadClass(name);
-    // } catch (ClassNotFoundException e) {
-    //
-    // }
-    //
-    // try {
-    // return findClass(name);
-    // } catch (ClassNotFoundException e) {
-    //
-    // }
-    //
-    // throw new ClassNotFoundException(name);
-    // }
-    // }
+//    @Override
+//    public URL getResource(String name) {
+//        URL resource = findResource(name);
+//        if (resource != null)
+//            return resource;
+//
+//        return super.getResource(name);
+//    }
+//
+//    @Override
+//    public Class<?> loadClass(String name) throws ClassNotFoundException {
+//        synchronized (getClassLoadingLock(name)) {
+//            Class<?> loadedClass;
+//
+//            loadedClass = findLoadedClass(name);
+//            if (loadedClass != null) {
+//                return loadedClass;
+//            }
+//
+//            try {
+//                return super.loadClass(name);
+//            } catch (ClassNotFoundException e) {
+//
+//            }
+//
+//            try {
+//                return findClass(name);
+//            } catch (ClassNotFoundException e) {
+//
+//            }
+//
+//            throw new ClassNotFoundException(name);
+//        }
+//    }
 }

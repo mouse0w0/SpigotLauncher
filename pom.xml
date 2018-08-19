@@ -5,7 +5,7 @@
 
     <groupId>com.github.mouse0w0</groupId>
     <artifactId>spigotlauncher</artifactId>
-    <version>0.1.1-alpha</version>
+    <version>0.1.2-alpha</version>
     <packaging>jar</packaging>
 
     <name>SpigotLauncher</name>
@@ -59,8 +59,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>spigotlauncher.Launch</mainClass> <!-- 你的主类名 -->
+                            <mainClass>spigotlauncher.Launch</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -84,6 +83,8 @@
                                     <include>net.sf.jopt-simple:jopt-simple</include>
                                     <include>org.ow2.asm:asm-debug-all</include>
                                     <include>org.slf4j:slf4j-simple</include>
+                                    <include>org.slf4j:slf4j-api</include>
+                                    <include>org.hamcrest:hamcrest-core</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

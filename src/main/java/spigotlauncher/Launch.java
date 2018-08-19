@@ -43,9 +43,10 @@ public final class Launch {
             return;
         }
 
-        getLogger().info("Finded server file: {} Initializing...", serverFile.getAbsolutePath());
+        getLogger().info("Finded server file: {}", serverFile.getAbsolutePath());
 
         try {
+            getLogger().info("Initilizing...");
             classLoader = new LaunchClassLoader(serverFile);
             Thread.currentThread().setContextClassLoader(classLoader);
 
