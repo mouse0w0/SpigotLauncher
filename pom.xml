@@ -80,11 +80,7 @@
                             <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
-                                    <include>net.sf.jopt-simple:jopt-simple</include>
-                                    <include>org.ow2.asm:asm-debug-all</include>
-                                    <include>org.slf4j:slf4j-simple</include>
-                                    <include>org.slf4j:slf4j-api</include>
-                                    <include>org.hamcrest:hamcrest-core</include>
+                                    <include>*</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

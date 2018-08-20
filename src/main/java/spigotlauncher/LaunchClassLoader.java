@@ -8,10 +8,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.security.CodeSource;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -57,23 +55,19 @@ public class LaunchClassLoader extends URLClassLoader {
         if (clazz != null)
             return clazz;
 
-        if (isExcludedTransform(name)) {
-            return super.findClass(name);
+        final int lastDot = name.lastIndexOf('.');
+        final String classFileName = name.replace('.', '/').concat(".class");
+        final String packageName = lastDot == -1 ? "" : name.substring(0, lastDot);
+
+        Package pkg = getPackage(packageName);
+        if (pkg == null) {
+            pkg = definePackage(packageName, serverFileManifest, serverFileUrl);
         }
 
-        if (isIncludedTransform(name)) {
-            final int lastDot = name.lastIndexOf('.');
-            final String classFileName = name.replace('.', '/').concat(".class");
-            final String packageName = lastDot == -1 ? "" : name.substring(0, lastDot);
-
+        if (!isExcludedTransform(name) && isIncludedTransform(name)) {
             final URL classResource = findResource(classFileName);
             if (classResource == null)
                 throw new ClassNotFoundException(name);
-
-            Package pkg = getPackage(packageName);
-            if (pkg == null) {
-                pkg = definePackage(packageName, serverFileManifest, serverFileUrl);
-            }
 
             try (InputStream stream = classResource.openStream()) {
                 byte[] bytes = readAllBytes(stream);
@@ -146,8 +140,8 @@ public class LaunchClassLoader extends URLClassLoader {
 //
 //        return super.getResource(name);
 //    }
-//
-//    @Override
+
+    //    @Override
 //    public Class<?> loadClass(String name) throws ClassNotFoundException {
 //        synchronized (getClassLoadingLock(name)) {
 //            Class<?> loadedClass;
