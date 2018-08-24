@@ -2,6 +2,8 @@ package spigotlauncher;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -59,6 +61,11 @@ public final class Launch {
             initTransformers();
 
             Launch.getLogger().info("Launching server...");
+            ClassLoader systemClassLoader = Launch.class.getClassLoader();
+            Method addUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+            addUrl.setAccessible(true);
+            addUrl.invoke(systemClassLoader, serverFile.toURI().toURL());
+
             Class<?> craftBukkitMain = Class.forName("org.bukkit.craftbukkit.Main", false, classLoader);
             Method main = craftBukkitMain.getMethod("main", String[].class);
             main.invoke(null, new Object[]{args});

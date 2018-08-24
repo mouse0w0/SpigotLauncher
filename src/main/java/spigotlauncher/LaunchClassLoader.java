@@ -1,6 +1,7 @@
 package spigotlauncher;
 
 import spigotlauncher.api.Transformer;
+import sun.misc.CompoundEnumeration;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -18,31 +20,38 @@ public class LaunchClassLoader extends URLClassLoader {
     private URL serverFileUrl;
     private Manifest serverFileManifest;
 
+    private static final ClassLoader parent = Launch.class.getClassLoader();
+
+    private final Set<String> unfoundClasses = new HashSet<>();
+    private final Map<String, Class<?>> cachedClasses = new ConcurrentHashMap<String, Class<?>>();
+
+    private final List<String> excludedClassLoaderPackages = new ArrayList<>();
     private final List<String> excludedTransformPackages = new ArrayList<>();
     private final List<String> includedTransformPackages = new ArrayList<>();
 
     private final List<Transformer> transformers = new ArrayList<>();
 
-    public LaunchClassLoader(File serverFile) {
-        super(new URL[0]);
+    public LaunchClassLoader(File serverFile) throws IOException {
+        super(new URL[0], parent);
 
-        try {
-            serverFileUrl = serverFile.toURI().toURL();
-            addURL(serverFileUrl);
-        } catch (MalformedURLException e) {
-            Launch.getLogger().error(e.getMessage(), e);
-        }
+        serverFileUrl = serverFile.toURI().toURL();
+        addURL(serverFileUrl);
 
         try (JarFile serverJarFile = new JarFile(serverFile)) {
             serverFileManifest = serverJarFile.getManifest();
-        } catch (IOException e) {
-            Launch.getLogger().error(e.getMessage(), e);
         }
+
+        excludedClassLoaderPackages.add("org.apache.logging.");
 
         excludedTransformPackages.add("org.bukkit.craftbukkit.libs.");
 
         includedTransformPackages.add("net.minecraft.server.");
         includedTransformPackages.add("org.bukkit.");
+    }
+
+    @Override
+    protected void addURL(URL url) {
+        super.addURL(url);
     }
 
     public void addTransformer(Collection<Transformer> transformers) {
@@ -51,34 +60,58 @@ public class LaunchClassLoader extends URLClassLoader {
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        Class<?> clazz = findLoadedClass(name);
-        if (clazz != null)
-            return clazz;
+        if (unfoundClasses.contains(name))
+            throw new ClassNotFoundException(name);
 
-        final int lastDot = name.lastIndexOf('.');
-        final String classFileName = name.replace('.', '/').concat(".class");
-        final String packageName = lastDot == -1 ? "" : name.substring(0, lastDot);
-
-        Package pkg = getPackage(packageName);
-        if (pkg == null) {
-            pkg = definePackage(packageName, serverFileManifest, serverFileUrl);
+        if (isExcludedClassLoader(name)) {
+            return parent.loadClass(name);
         }
 
-        if (!isExcludedTransform(name) && isIncludedTransform(name)) {
-            final URL classResource = findResource(classFileName);
-            if (classResource == null)
-                throw new ClassNotFoundException(name);
+        if (cachedClasses.containsKey(name))
+            return cachedClasses.get(name);
 
-            try (InputStream stream = classResource.openStream()) {
-                byte[] bytes = readAllBytes(stream);
-                bytes = transform(name, bytes);
-                return defineClass(name, bytes, 0, bytes.length);
-            } catch (IOException e) {
-                throw new ClassNotFoundException(name, e);
+        if (isExcludedTransform(name)) {
+            try {
+                final Class<?> clazz = super.findClass(name);
+                cachedClasses.put(name, clazz);
+                return clazz;
+            } catch (ClassNotFoundException e) {
+                unfoundClasses.add(name);
+                throw e;
             }
         }
 
-        return super.findClass(name);
+        try {
+            if (isIncludedTransform(name)) {
+                final int lastDot = name.lastIndexOf('.');
+                final String classFileName = name.replace('.', '/').concat(".class");
+                final String packageName = lastDot == -1 ? "" : name.substring(0, lastDot);
+
+                Package pkg = getPackage(packageName);
+                if (pkg == null) {
+                    pkg = definePackage(packageName, serverFileManifest, serverFileUrl);
+                }
+
+                final URL classResource = findResource(classFileName);
+                if (classResource == null)
+                    throw new ClassNotFoundException(name);
+
+                try (InputStream stream = classResource.openStream()) {
+                    byte[] bytes = readAllBytes(stream);
+                    bytes = transform(name, bytes);
+                    return defineClass(name, bytes, 0, bytes.length);
+                } catch (IOException e) {
+                    throw new ClassNotFoundException(name, e);
+                }
+            } else {
+                Class<?> clazz = super.findClass(name);
+                cachedClasses.put(name, clazz);
+                return clazz;
+            }
+        } catch (ClassNotFoundException e) {
+            unfoundClasses.add(name);
+            throw e;
+        }
     }
 
     private byte[] transform(String name, byte[] bytes) {
@@ -86,6 +119,14 @@ public class LaunchClassLoader extends URLClassLoader {
             bytes = transformer.transform(name, bytes);
         }
         return bytes;
+    }
+
+    private boolean isExcludedClassLoader(String name) {
+        for (String prefix : excludedClassLoaderPackages) {
+            if (name.startsWith(prefix))
+                return true;
+        }
+        return false;
     }
 
     private boolean isExcludedTransform(String name) {
@@ -132,38 +173,22 @@ public class LaunchClassLoader extends URLClassLoader {
         return (capacity == nread) ? buf : Arrays.copyOf(buf, nread);
     }
 
-//    @Override
-//    public URL getResource(String name) {
-//        URL resource = findResource(name);
-//        if (resource != null)
-//            return resource;
-//
-//        return super.getResource(name);
-//    }
+    @Override
+    public URL getResource(String name) {
+        return parent.getResource(name);
+    }
 
-    //    @Override
-//    public Class<?> loadClass(String name) throws ClassNotFoundException {
-//        synchronized (getClassLoadingLock(name)) {
-//            Class<?> loadedClass;
-//
-//            loadedClass = findLoadedClass(name);
-//            if (loadedClass != null) {
-//                return loadedClass;
-//            }
-//
-//            try {
-//                return super.loadClass(name);
-//            } catch (ClassNotFoundException e) {
-//
-//            }
-//
-//            try {
-//                return findClass(name);
-//            } catch (ClassNotFoundException e) {
-//
-//            }
-//
-//            throw new ClassNotFoundException(name);
-//        }
-//    }
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        return parent.getResources(name);
+    }
+
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        if (!isIncludedTransform(name)) {
+            return parent.loadClass(name);
+        } else {
+            return super.loadClass(name);
+        }
+    }
 }
