@@ -29,6 +29,10 @@ public class PluginLoader {
 
     public List<PluginContainer> loadAllCorePlugin() throws IOException {
         final List<PluginContainer> containers = new ArrayList<>();
+
+        if(!Files.exists(pluginDir))
+            Files.createDirectory(pluginDir);
+
         Files.walkFileTree(pluginDir, Collections.<FileVisitOption>emptySet(), 1, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

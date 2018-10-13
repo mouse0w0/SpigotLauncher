@@ -42,6 +42,11 @@ public class LaunchClassLoader extends URLClassLoader {
         }
 
         excludedClassLoaderPackages.add("org.apache.logging.");
+        excludedClassLoaderPackages.add("java.");
+        excludedClassLoaderPackages.add("javax.");
+        excludedClassLoaderPackages.add("sun.");
+        excludedClassLoaderPackages.add("com.sun.");
+        excludedClassLoaderPackages.add("jdk.");
 
         excludedTransformPackages.add("org.bukkit.craftbukkit.libs.");
 
@@ -59,20 +64,18 @@ public class LaunchClassLoader extends URLClassLoader {
     }
 
     @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        return findClass(name);
+    }
+
+    @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         if (unfoundClasses.contains(name))
             throw new ClassNotFoundException(name);
 
         if (isExcludedClassLoader(name)) {
-            return parent.loadClass(name);
-        }
-
-        if (cachedClasses.containsKey(name))
-            return cachedClasses.get(name);
-
-        if (isExcludedTransform(name)) {
             try {
-                final Class<?> clazz = super.findClass(name);
+                Class<?> clazz = parent.loadClass(name);
                 cachedClasses.put(name, clazz);
                 return clazz;
             } catch (ClassNotFoundException e) {
@@ -81,17 +84,22 @@ public class LaunchClassLoader extends URLClassLoader {
             }
         }
 
+        if (cachedClasses.containsKey(name))
+            return cachedClasses.get(name);
+
         try {
-            if (isIncludedTransform(name)) {
-                final int lastDot = name.lastIndexOf('.');
-                final String classFileName = name.replace('.', '/').concat(".class");
-                final String packageName = lastDot == -1 ? "" : name.substring(0, lastDot);
+            final int lastDot = name.lastIndexOf('.');
+            final String classFileName = name.replace('.', '/').concat(".class");
+            final String packageName = lastDot == -1 ? "" : name.substring(0, lastDot);
 
-                Package pkg = getPackage(packageName);
-                if (pkg == null) {
-                    pkg = definePackage(packageName, serverFileManifest, serverFileUrl);
-                }
+            Package pkg = getPackage(packageName);
+            if (pkg == null) {
+                pkg = definePackage(packageName, serverFileManifest, serverFileUrl);
+            }
 
+            Class<?> clazz;
+
+            if (isIncludedTransform(name) && !isExcludedTransform(name)) {
                 final URL classResource = findResource(classFileName);
                 if (classResource == null)
                     throw new ClassNotFoundException(name);
@@ -99,15 +107,33 @@ public class LaunchClassLoader extends URLClassLoader {
                 try (InputStream stream = classResource.openStream()) {
                     byte[] bytes = readAllBytes(stream);
                     bytes = transform(name, bytes);
-                    return defineClass(name, bytes, 0, bytes.length);
+                    clazz = defineClass(name, bytes, 0, bytes.length);
                 } catch (IOException e) {
                     throw new ClassNotFoundException(name, e);
                 }
             } else {
-                Class<?> clazz = super.findClass(name);
-                cachedClasses.put(name, clazz);
+                final URL classResource = findResource(classFileName);
+                if (classResource == null)
+                    throw new ClassNotFoundException(name);
+
+                try (InputStream stream = classResource.openStream()) {
+                    byte[] bytes = readAllBytes(stream);
+                    clazz = defineClass(name, bytes, 0, bytes.length);
+                    if (clazz == null) {
+                        clazz = parent.loadClass(name);
+                    }
+                } catch (IOException e) {
+                    throw new ClassNotFoundException(name, e);
+                }
                 return clazz;
             }
+
+            if (clazz == null) {
+                throw new ClassNotFoundException(name);
+            }
+
+            cachedClasses.put(name, clazz);
+            return clazz;
         } catch (ClassNotFoundException e) {
             unfoundClasses.add(name);
             throw e;
@@ -173,22 +199,13 @@ public class LaunchClassLoader extends URLClassLoader {
         return (capacity == nread) ? buf : Arrays.copyOf(buf, nread);
     }
 
-    @Override
-    public URL getResource(String name) {
-        return parent.getResource(name);
-    }
-
-    @Override
-    public Enumeration<URL> getResources(String name) throws IOException {
-        return parent.getResources(name);
-    }
-
-    @Override
-    public Class<?> loadClass(String name) throws ClassNotFoundException {
-        if (!isIncludedTransform(name)) {
-            return parent.loadClass(name);
-        } else {
-            return super.loadClass(name);
-        }
-    }
+//    @Override
+//    public URL getResource(String name) {
+//        return parent.getResource(name);
+//    }
+//
+//    @Override
+//    public Enumeration<URL> getResources(String name) throws IOException {
+//        return parent.getResources(name);
+//    }
 }
