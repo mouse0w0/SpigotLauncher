@@ -3,6 +3,8 @@
 
 A launcher for better modify Spigot server.
 
+**Warning: This project is developing.**
+
 ## How to run
 
 Windows:
