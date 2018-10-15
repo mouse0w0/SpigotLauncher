@@ -1,5 +1,10 @@
 /*
+*.class
+*.jar
+*/target
+*.iml
 
 !pom.xml
 !.gitignore
-!src/
+!spigotlauncher-api/
+!spigotlauncher-core/
