@@ -1,6 +1,7 @@
 package spigotlauncher;
 
 import spigotlauncher.api.Transformer;
+import spigotlauncher.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,10 +23,7 @@ public class LaunchClassLoader extends URLClassLoader {
     private final Set<String> unfoundClasses = new HashSet<>();
     private final Map<String, Class<?>> cachedClasses = new ConcurrentHashMap<String, Class<?>>();
 
-    private final List<String> excludedTransformPackages = new LinkedList<>();
-    private final List<String> includedTransformPackages = new LinkedList<>();
-
-    private final List<Transformer> transformers = new LinkedList<>();
+    private final TransformExecutor transformExecutor = new TransformExecutor();
 
     public LaunchClassLoader(File serverFile) throws IOException {
         super(new URL[0], parent);
@@ -36,20 +34,11 @@ public class LaunchClassLoader extends URLClassLoader {
         try (JarFile serverJarFile = new JarFile(serverFile)) {
             serverFileManifest = serverJarFile.getManifest();
         }
-
-        excludedTransformPackages.add("org.bukkit.craftbukkit.libs.");
-
-        includedTransformPackages.add("net.minecraft.server.");
-        includedTransformPackages.add("org.bukkit.");
     }
 
     @Override
     protected void addURL(URL url) {
         super.addURL(url);
-    }
-
-    public void addTransformer(Collection<Transformer> transformers) {
-        this.transformers.addAll(transformers);
     }
 
     @Override
@@ -82,9 +71,9 @@ public class LaunchClassLoader extends URLClassLoader {
                 clazz = parent.loadClass(name);
             } else {
                 try (InputStream stream = classResource.openStream()) {
-                    byte[] bytes = readAllBytes(stream);
-                    if (isIncludedTransform(name) && !isExcludedTransform(name)) {
-                        bytes = transform(name, bytes);
+                    byte[] bytes = Utils.readAllBytes(stream);
+                    if (transformExecutor.isIncludedTransform(name) && !transformExecutor.isExcludedTransform(name)) {
+                        bytes = transformExecutor.transform(name, bytes);
                     }
                     clazz = defineClass(name, bytes, 0, bytes.length);
                 } catch (IOException e) {
@@ -104,54 +93,7 @@ public class LaunchClassLoader extends URLClassLoader {
         }
     }
 
-    private byte[] transform(String name, byte[] bytes) {
-        for (Transformer transformer : transformers) {
-            bytes = transformer.transform(name, bytes);
-        }
-        return bytes;
-    }
-
-    private boolean isExcludedTransform(String name) {
-        for (String prefix : excludedTransformPackages) {
-            if (name.startsWith(prefix))
-                return true;
-        }
-        return false;
-    }
-
-    private boolean isIncludedTransform(String name) {
-        for (String prefix : includedTransformPackages) {
-            if (name.startsWith(prefix))
-                return true;
-        }
-        return false;
-    }
-
-    private static final int BUFFER_SIZE = 8192;
-    private static final int MAX_BUFFER_SIZE = Integer.MAX_VALUE - 8;
-
-    private byte[] readAllBytes(InputStream stream) throws IOException {
-        int capacity = 16;
-        byte[] buf = new byte[capacity];
-        int nread = 0;
-        int n;
-        for (; ; ) {
-            while ((n = stream.read(buf, nread, capacity - nread)) > 0)
-                nread += n;
-
-            if (n < 0 || (n = stream.read()) < 0)
-                break;
-
-            if (capacity <= MAX_BUFFER_SIZE - capacity) {
-                capacity = Math.max(capacity << 1, BUFFER_SIZE);
-            } else {
-                if (capacity == MAX_BUFFER_SIZE)
-                    throw new OutOfMemoryError("Required array size too large");
-                capacity = MAX_BUFFER_SIZE;
-            }
-            buf = Arrays.copyOf(buf, capacity);
-            buf[nread++] = (byte) n;
-        }
-        return (capacity == nread) ? buf : Arrays.copyOf(buf, nread);
+    public TransformExecutor getTransformExecutor() {
+        return transformExecutor;
     }
 }
