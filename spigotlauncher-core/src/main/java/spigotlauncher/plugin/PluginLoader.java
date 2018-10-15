@@ -30,9 +30,12 @@ public class PluginLoader {
     public List<PluginContainer> loadAllCorePlugin() throws IOException {
         final List<PluginContainer> containers = new ArrayList<>();
 
-        if(!Files.exists(pluginDir))
+        if(!Files.exists(pluginDir)) {
+            Launch.getLogger().warn("Plugins directory isn't exists. It will be create at {}", pluginDir.toAbsolutePath());
             Files.createDirectory(pluginDir);
+        }
 
+        Launch.getLogger().info("Loading core plugins from {}", pluginDir.toAbsolutePath());
         Files.walkFileTree(pluginDir, Collections.<FileVisitOption>emptySet(), 1, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -50,7 +53,6 @@ public class PluginLoader {
                     try {
                         PluginContainer container = loadCorePlugin(file, name, main);
                         containers.add(container);
-                        Launch.getLogger().info("Loaded core plugin: {}", name);
                     } catch (PluginException e) {
                         Launch.getLogger().warn(e.getMessage(), e);
                     }

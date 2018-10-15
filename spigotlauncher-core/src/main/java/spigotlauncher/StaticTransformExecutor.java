@@ -28,7 +28,7 @@ public class StaticTransformExecutor extends TransformExecutor {
                 Enumeration<JarEntry> entries = serverJar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
-                    output.putNextEntry(new JarEntry(entry));
+                    output.putNextEntry(new JarEntry(entry.getName()));
 
                     if (entry.isDirectory()) {
                         continue;

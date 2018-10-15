@@ -37,13 +37,13 @@ public final class Launch {
 
         OptionParser parser = new OptionParser();
         OptionSpec<String> server = parser.accepts("serverFile").withRequiredArg().defaultsTo("server.jar");
-        OptionSpec<Boolean> debug = parser.accepts("debug").withRequiredArg().ofType(Boolean.class).defaultsTo(false);
-        OptionSpec<Boolean> staticMode = parser.accepts("staticMode").withOptionalArg().ofType(Boolean.class).defaultsTo(false);
-        OptionSpec<String> staticOutputFile = parser.accepts("staticOutputFile").withOptionalArg().defaultsTo("server_transformed.jar");
+        OptionSpec<Void> debug = parser.accepts("debug");
+        OptionSpec<Void> staticMode = parser.accepts("staticMode");
+        OptionSpec<String> staticOutputFile = parser.accepts("staticOutputFile").withRequiredArg().defaultsTo("server_transformed.jar");
         OptionSet options = parser.parse(args);
 
-        Launch.debug = debug.value(options);
-        Launch.staticMode = staticMode.value(options);
+        Launch.debug = options.has(debug);
+        Launch.staticMode = options.has(staticMode);
 
         if (Launch.debug)
             getLogger().warn("Debug mode has been enabled.");
@@ -87,7 +87,7 @@ public final class Launch {
             executor.addPluginTransformers(plugins);
             executor.start();
         } else {
-            launchServer(serverFile, args);
+            launchServer(serverFile, args); // FIXME: args cannot use on it.
         }
     }
 
