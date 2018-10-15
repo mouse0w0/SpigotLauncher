@@ -1,6 +1,6 @@
 package spigotlauncher;
 
-import spigotlauncher.api.Transformer;
+import spigotlauncher.api.plugin.Transformer;
 import spigotlauncher.plugin.PluginContainer;
 
 import java.util.Collection;

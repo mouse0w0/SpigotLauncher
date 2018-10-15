@@ -1,6 +1,5 @@
 package spigotlauncher;
 
-import spigotlauncher.api.Transformer;
 import spigotlauncher.util.Utils;
 
 import java.io.File;

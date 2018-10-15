@@ -1,4 +1,4 @@
-package spigotlauncher.api;
+package spigotlauncher.api.plugin;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -9,4 +9,6 @@ public interface CorePlugin {
 	void acceptOptions(List<String> args, Path serverDir);
 	
 	Collection<Transformer> getTransformers();
+
+	String[] getLaunchArguments();
 }

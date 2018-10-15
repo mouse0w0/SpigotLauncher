@@ -7,6 +7,8 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -87,7 +89,7 @@ public final class Launch {
             executor.addPluginTransformers(plugins);
             executor.start();
         } else {
-            launchServer(serverFile, args); // FIXME: args cannot use on it.
+            launchServer(serverFile, collectLaunchArguments());
         }
     }
 
@@ -115,6 +117,14 @@ public final class Launch {
         for (PluginContainer container : plugins) {
             container.getInstance().acceptOptions(args, serverDir);
         }
+    }
+
+    private static String[] collectLaunchArguments() {
+        List<String> args = new LinkedList<>();
+        for (PluginContainer container : plugins) {
+            Collections.addAll(args, container.getInstance().getLaunchArguments());
+        }
+        return args.toArray(new String[0]);
     }
 
     private static void printAllPlugin() {

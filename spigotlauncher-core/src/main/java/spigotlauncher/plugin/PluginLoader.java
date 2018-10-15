@@ -14,7 +14,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import spigotlauncher.Launch;
-import spigotlauncher.api.CorePlugin;
+import spigotlauncher.api.plugin.CorePlugin;
 
 public class PluginLoader {
 

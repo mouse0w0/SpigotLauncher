@@ -1,4 +1,4 @@
-package spigotlauncher.api;
+package spigotlauncher.api.plugin;
 
 public interface Transformer {
 	
