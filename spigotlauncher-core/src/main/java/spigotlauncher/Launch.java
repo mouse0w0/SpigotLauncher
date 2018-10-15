@@ -71,10 +71,10 @@ public final class Launch {
             return;
         }
 
-        getLogger().info("Finded server file: {}", serverFile.getAbsolutePath());
+        getLogger().info("Found server file: {}", serverFile.getAbsolutePath());
 
         try {
-            getLogger().info("Initilizing...");
+            getLogger().info("Initializing...");
 
             getLogger().info("Loading core plugins...");
             PluginLoader pluginLoader = new PluginLoader(Paths.get("plugins"));
@@ -97,7 +97,8 @@ public final class Launch {
 
     private static void launchServer(File serverFile, String[] args) {
         try {
-            Launch.getLogger().info("Launching server...");
+            getLogger().info("Launch arguments is {}", Arrays.asList(args));
+            getLogger().info("Launching server...");
             classLoader = new LaunchClassLoader(serverFile);
             classLoader.getTransformExecutor().addPluginTransformers(plugins);
             Thread.currentThread().setContextClassLoader(classLoader);
