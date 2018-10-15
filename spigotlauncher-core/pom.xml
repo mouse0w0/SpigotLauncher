@@ -10,8 +10,24 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>spigotlauncher-core</artifactId>
+    <name>SpigotLauncher</name>
 
     <dependencies>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-debug-all</artifactId>
+            <version>5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jopt-simple</groupId>
+            <artifactId>jopt-simple</artifactId>
+            <version>4.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.25</version>
+        </dependency>
         <dependency>
             <groupId>com.github.mouse0w0</groupId>
             <artifactId>spigotlauncher-api</artifactId>
