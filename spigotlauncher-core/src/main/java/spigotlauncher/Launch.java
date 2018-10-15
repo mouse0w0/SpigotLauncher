@@ -4,6 +4,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -38,10 +39,11 @@ public final class Launch {
         Platform.setPlatformProvider(new PlatformProviderImpl());
 
         OptionParser parser = new OptionParser();
-        OptionSpec<String> server = parser.accepts("serverFile").withRequiredArg().defaultsTo("server.jar");
+        OptionSpec<String> server = parser.accepts("server-file").withRequiredArg().defaultsTo("server.jar");
         OptionSpec<Void> debug = parser.accepts("debug");
-        OptionSpec<Void> staticMode = parser.accepts("staticMode");
-        OptionSpec<String> staticOutputFile = parser.accepts("staticOutputFile").withRequiredArg().defaultsTo("server_transformed.jar");
+        OptionSpec<Void> staticMode = parser.accepts("static-mode");
+        OptionSpec<String> staticOutput = parser.accepts("static-output").withRequiredArg().defaultsTo("server_transformed.jar");
+        OptionSpec<String> bukkitArgs = parser.accepts("bukkit-args").withOptionalArg();
         OptionSet options = parser.parse(args);
 
         Launch.debug = options.has(debug);
@@ -51,7 +53,7 @@ public final class Launch {
             getLogger().warn("Debug mode has been enabled.");
 
         if (Launch.staticMode) {
-            Launch.staticOutputFile = new File(staticOutputFile.value(options));
+            Launch.staticOutputFile = new File(staticOutput.value(options));
             getLogger().warn("Static mode has been enabled. Static output file is {} .", Launch.staticOutputFile.getAbsolutePath());
         }
 
@@ -89,7 +91,7 @@ public final class Launch {
             executor.addPluginTransformers(plugins);
             executor.start();
         } else {
-            launchServer(serverFile, collectLaunchArguments());
+            launchServer(serverFile, collectLaunchArguments(bukkitArgs.value(options)));
         }
     }
 
@@ -100,10 +102,10 @@ public final class Launch {
             classLoader.getTransformExecutor().addPluginTransformers(plugins);
             Thread.currentThread().setContextClassLoader(classLoader);
 
-            ClassLoader systemClassLoader = Launch.class.getClassLoader();
-            Method addUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-            addUrl.setAccessible(true);
-            addUrl.invoke(systemClassLoader, serverFile.toURI().toURL());
+//            ClassLoader systemClassLoader = Launch.class.getClassLoader();
+//            Method addUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+//            addUrl.setAccessible(true);
+//            addUrl.invoke(systemClassLoader, serverFile.toURI().toURL());
 
             Class<?> craftBukkitMain = Class.forName("org.bukkit.craftbukkit.Main", false, classLoader);
             Method main = craftBukkitMain.getMethod("main", String[].class);
@@ -119,10 +121,31 @@ public final class Launch {
         }
     }
 
-    private static String[] collectLaunchArguments() {
+    private static String[] collectLaunchArguments(String bukkitArgsFile) {
         List<String> args = new LinkedList<>();
+
+        if (bukkitArgsFile != null) {
+            Path bukkitArgsPath = Paths.get(bukkitArgsFile);
+            getLogger().info("Try to load bukkit arguments from {}", bukkitArgsPath.toAbsolutePath());
+            if (Files.exists(bukkitArgsPath)) {
+                try {
+                    List<String> lines = Files.readAllLines(bukkitArgsPath);
+                    if (lines.isEmpty()) {
+                        getLogger().warn("Bukkit arguments file is empty.");
+                    } else {
+                        Collections.addAll(args, lines.get(0).split(" "));
+                        getLogger().info("Loaded bukkit arguments.");
+                    }
+                } catch (IOException e) {
+                    getLogger().error(e.getMessage(), e);
+                }
+            }
+        }
+
         for (PluginContainer container : plugins) {
-            Collections.addAll(args, container.getInstance().getLaunchArguments());
+            String[] pluginArgs = container.getInstance().getLaunchArguments();
+            if (pluginArgs != null)
+                Collections.addAll(args, pluginArgs);
         }
         return args.toArray(new String[0]);
     }
