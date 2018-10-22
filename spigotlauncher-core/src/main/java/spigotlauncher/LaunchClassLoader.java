@@ -1,5 +1,6 @@
 package spigotlauncher;
 
+import spigotlauncher.api.ClassDefiner;
 import spigotlauncher.util.Utils;
 
 import java.io.File;
@@ -12,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-public class LaunchClassLoader extends URLClassLoader {
+public class LaunchClassLoader extends URLClassLoader implements ClassDefiner {
 
     private URL serverFileUrl;
     private Manifest serverFileManifest;
@@ -94,5 +95,9 @@ public class LaunchClassLoader extends URLClassLoader {
 
     public TransformExecutor getTransformExecutor() {
         return transformExecutor;
+    }
+
+    public void define(String name, byte[] b, int off, int len) {
+        defineClass(name, b, off, len);
     }
 }

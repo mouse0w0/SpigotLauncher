@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import spigotlauncher.api.ClassDefiner;
 import spigotlauncher.api.Platform;
 import spigotlauncher.api.PlatformProvider;
 import spigotlauncher.plugin.PluginContainer;
@@ -98,6 +99,7 @@ public final class Launch {
 
         if (Launch.staticMode) {
             StaticTransformExecutor executor = new StaticTransformExecutor(serverFile, Launch.staticOutputFile);
+            initializePlugins(executor);
             executor.addPluginTransformers(plugins);
             executor.start();
         } else {
@@ -113,6 +115,8 @@ public final class Launch {
             classLoader.getTransformExecutor().addPluginTransformers(plugins);
             Thread.currentThread().setContextClassLoader(classLoader);
 
+            initializePlugins(classLoader);
+
 //            ClassLoader systemClassLoader = Launch.class.getClassLoader();
 //            Method addUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
 //            addUrl.setAccessible(true);
@@ -123,6 +127,12 @@ public final class Launch {
             main.invoke(null, new Object[]{args});
         } catch (Exception e) {
             getLogger().error("Failed to launch server.", e);
+        }
+    }
+
+    private static void initializePlugins(ClassDefiner classDefiner) {
+        for (PluginContainer container : plugins) {
+            container.getInstance().initialize(classDefiner);
         }
     }
 
