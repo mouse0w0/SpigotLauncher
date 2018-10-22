@@ -39,12 +39,22 @@ public final class Launch {
         Platform.setPlatformProvider(new PlatformProviderImpl());
 
         OptionParser parser = new OptionParser();
-        OptionSpec<String> server = parser.accepts("server-file").withRequiredArg().defaultsTo("server.jar");
-        OptionSpec<Void> debug = parser.accepts("debug");
-        OptionSpec<Void> staticMode = parser.accepts("static-mode");
-        OptionSpec<String> staticOutput = parser.accepts("static-output").withRequiredArg().defaultsTo("server_transformed.jar");
-        OptionSpec<String> bukkitArgs = parser.accepts("bukkit-args").withOptionalArg();
+        OptionSpec<Void> help = parser.accepts("help", "Print help information.");
+        OptionSpec<String> server = parser.accepts("server-file", "").withRequiredArg().defaultsTo("server.jar");
+        OptionSpec<Void> debug = parser.accepts("debug", "Enable debug mode.");
+        OptionSpec<Void> staticMode = parser.accepts("static-mode", "Enable static mode.");
+        OptionSpec<String> staticOutput = parser.accepts("static-output", "Set static output file name.").withRequiredArg().defaultsTo("server_transformed.jar");
+        OptionSpec<String> bukkitArgs = parser.accepts("bukkit-args", "Set bukkit launch arguments file name.").withOptionalArg();
         OptionSet options = parser.parse(args);
+
+        if(options.has(help)) {
+            try {
+                parser.printHelpOn(System.out);
+            } catch (IOException e) {
+                getLogger().error("Cannot print help.", e);
+            }
+            return;
+        }
 
         Launch.debug = options.has(debug);
         Launch.staticMode = options.has(staticMode);
@@ -179,5 +189,7 @@ public final class Launch {
         public Logger getLogger() {
             return Launch.getLogger();
         }
+
+        //TODO: Version
     }
 }
