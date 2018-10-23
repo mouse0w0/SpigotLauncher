@@ -75,9 +75,9 @@ public class PluginLoader {
 
         containers.sort((o1, o2) -> {
             if(o1.getBefores().contains(o2.getName()) || o2.getAfters().contains(o1.getName()))
-                return 1;
-            if(o1.getAfters().contains(o1.getName()) || o2.getBefores().contains(o1.getName()))
                 return -1;
+            if(o1.getAfters().contains(o2.getName()) || o2.getBefores().contains(o1.getName()))
+                return 1;
             return 0;
         });
 
