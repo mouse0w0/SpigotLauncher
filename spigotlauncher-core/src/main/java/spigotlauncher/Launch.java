@@ -174,7 +174,7 @@ public final class Launch {
     private static void printAllPlugin() {
         StringBuilder sb = new StringBuilder("Loaded plugins: { ");
         for (PluginContainer container : plugins) {
-            sb.append(container.getName()).append(" ");
+            sb.append(container.getName()).append("@").append(container.getVersion().toString()).append(" ");
         }
         getLogger().info(sb.append("}").toString());
     }
