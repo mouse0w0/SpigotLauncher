@@ -53,7 +53,15 @@ public class PluginLoader {
 
                 try (JarFile jarFile = new JarFile(file.toString())) {
                     Manifest manifest = jarFile.getManifest();
+                    if (manifest == null) {
+                        return FileVisitResult.CONTINUE;
+                    }
+
                     Attributes mainAttributes = manifest.getMainAttributes();
+
+                    if (mainAttributes.containsKey(COREPLUGIN_MAIN_KEY)) {
+                        return FileVisitResult.CONTINUE;
+                    }
 
                     name = mainAttributes.getValue(COREPLUGIN_NAME_KEY);
                     String main = mainAttributes.getValue(COREPLUGIN_MAIN_KEY);
@@ -74,9 +82,9 @@ public class PluginLoader {
         });
 
         containers.sort((o1, o2) -> {
-            if(o1.getBefores().contains(o2.getName()) || o2.getAfters().contains(o1.getName()))
+            if (o1.getBefores().contains(o2.getName()) || o2.getAfters().contains(o1.getName()))
                 return -1;
-            if(o1.getAfters().contains(o2.getName()) || o2.getBefores().contains(o1.getName()))
+            if (o1.getAfters().contains(o2.getName()) || o2.getBefores().contains(o1.getName()))
                 return 1;
             return 0;
         });
