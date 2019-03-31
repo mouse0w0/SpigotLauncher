@@ -12,14 +12,14 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
-public class StaticTransformExecutor extends TransformExecutor implements ClassDefiner {
+public class StaticTransformer extends TransformExecutor implements ClassDefiner {
 
     private final File serverFile;
     private final File outputFile;
 
     private JarOutputStream output;
 
-    public StaticTransformExecutor(File serverFile, File outputFile) {
+    public StaticTransformer(File serverFile, File outputFile) {
         this.serverFile = serverFile;
         this.outputFile = outputFile;
     }

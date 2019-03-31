@@ -2,16 +2,19 @@ package spigotlauncher;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +26,7 @@ import spigotlauncher.api.Platform;
 import spigotlauncher.api.PlatformProvider;
 import spigotlauncher.plugin.PluginContainer;
 import spigotlauncher.plugin.PluginLoader;
+import spigotlauncher.util.Utils;
 
 public final class Launch {
 
@@ -37,18 +41,16 @@ public final class Launch {
     private static File staticOutputFile;
 
     public static void main(String[] args) {
-        Platform.setPlatformProvider(new PlatformProviderImpl());
-
         OptionParser parser = new OptionParser();
         OptionSpec<Void> help = parser.accepts("help", "Print help information.");
         OptionSpec<String> server = parser.accepts("server-file", "").withRequiredArg().defaultsTo("server.jar");
         OptionSpec<Void> debug = parser.accepts("debug", "Enable debug mode.");
         OptionSpec<Void> staticMode = parser.accepts("static-mode", "Enable static mode.");
         OptionSpec<String> staticOutput = parser.accepts("static-output", "Set static output file name.").withRequiredArg().defaultsTo("server_transformed.jar");
-        OptionSpec<String> bukkitArgs = parser.accepts("bukkit-args", "Set bukkit launch arguments file name.").withOptionalArg();
+        OptionSpec<String> bukkitArgs = parser.accepts("bukkit-args", "Set bukkit launch arguments file name.").withRequiredArg();
         OptionSet options = parser.parse(args);
 
-        if(options.has(help)) {
+        if (options.has(help)) {
             try {
                 parser.printHelpOn(System.out);
             } catch (IOException e) {
@@ -86,6 +88,7 @@ public final class Launch {
 
         try {
             getLogger().info("Initializing...");
+            initPlatform(serverFile);
 
             getLogger().info("Loading core plugins...");
             PluginLoader pluginLoader = new PluginLoader(Paths.get("plugins"));
@@ -98,7 +101,7 @@ public final class Launch {
         }
 
         if (Launch.staticMode) {
-            StaticTransformExecutor executor = new StaticTransformExecutor(serverFile, Launch.staticOutputFile);
+            StaticTransformer executor = new StaticTransformer(serverFile, Launch.staticOutputFile);
             initializePlugins(executor);
             executor.addPluginTransformers(plugins);
             executor.start();
@@ -179,11 +182,63 @@ public final class Launch {
         getLogger().info(sb.append("}").toString());
     }
 
+    private static void initPlatform(File serverFile) {
+        Pattern craftbukkitVersionPattern = Pattern.compile("net/minecraft/server/[0-9vR_]+/");
+        String minecraftVersion = null;
+        String craftbukkitVersion = null;
+        try (JarFile jarFile = new JarFile(serverFile)) {
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                String name = entry.getName();
+                if (craftbukkitVersionPattern.matcher(name).matches()) {
+                    // Find craftbukkit version
+                    craftbukkitVersion = name.substring("net/minecraft/server/".length(), name.length() - 1);
+                    break;
+                }
+            }
+
+            // Find minecraft version
+            JarEntry serverClass = jarFile.getJarEntry("net/minecraft/server/" + craftbukkitVersion + "/MinecraftServer.class");
+            try (InputStream input = jarFile.getInputStream(serverClass)) {
+                ClassReader cr = new ClassReader(input);
+                ClassNode cn = new ClassNode();
+                cr.accept(cn, 0);
+                for (MethodNode mn : (List<MethodNode>) cn.methods) {
+                    if (!mn.name.equals("getVersion"))
+                        continue;
+
+                    ListIterator iterator = mn.instructions.iterator();
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        if (next instanceof LdcInsnNode) {
+                            minecraftVersion = (String) ((LdcInsnNode) next).cst;
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot initialize platform.", e);
+        }
+        Platform.setPlatformProvider(new PlatformProviderImpl(minecraftVersion, craftbukkitVersion));
+    }
+
     public static Logger getLogger() {
         return LOGGER;
     }
 
     private static final class PlatformProviderImpl implements PlatformProvider {
+
+        private final String minecraftVersion;
+        private final String craftbukkitVersion;
+
+        public PlatformProviderImpl(String minecraftVersion, String craftbukkitVersion) {
+            this.minecraftVersion = minecraftVersion;
+            this.craftbukkitVersion = craftbukkitVersion;
+        }
 
         @Override
         public boolean isDebug() {
@@ -200,6 +255,14 @@ public final class Launch {
             return Launch.getLogger();
         }
 
-        //TODO: Version
+        @Override
+        public String getMinecraftVersion() {
+            return minecraftVersion;
+        }
+
+        @Override
+        public String getCraftBukkitVersion() {
+            return craftbukkitVersion;
+        }
     }
 }
