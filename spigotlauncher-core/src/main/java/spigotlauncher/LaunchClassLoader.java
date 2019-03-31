@@ -1,6 +1,7 @@
 package spigotlauncher;
 
 import spigotlauncher.api.ClassDefiner;
+import spigotlauncher.api.util.IOUtils;
 import spigotlauncher.util.Utils;
 
 import java.io.File;
@@ -71,7 +72,7 @@ public class LaunchClassLoader extends URLClassLoader implements ClassDefiner {
                 clazz = parent.loadClass(name);
             } else {
                 try (InputStream stream = classResource.openStream()) {
-                    byte[] bytes = Utils.readAllBytes(stream);
+                    byte[] bytes = IOUtils.readAllBytes(stream);
                     if (transformExecutor.isIncludedTransform(name) && !transformExecutor.isExcludedTransform(name)) {
                         bytes = transformExecutor.transform(name, bytes);
                     }
@@ -98,6 +99,7 @@ public class LaunchClassLoader extends URLClassLoader implements ClassDefiner {
     }
 
     public void define(String name, byte[] b, int off, int len) {
-        defineClass(name, b, off, len);
+        Class<?> clazz = defineClass(name, b, off, len);
+        cachedClasses.put(clazz.getName(), clazz);
     }
 }

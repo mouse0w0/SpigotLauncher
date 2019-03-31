@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spigotlauncher-parent</artifactId>
         <groupId>com.github.mouse0w0</groupId>
-        <version>0.3.0-beta</version>
+        <version>0.3.1-beta-beta</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

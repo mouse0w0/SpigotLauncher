@@ -1,6 +1,7 @@
 package spigotlauncher;
 
 import spigotlauncher.api.ClassDefiner;
+import spigotlauncher.api.util.IOUtils;
 import spigotlauncher.util.Utils;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class StaticTransformer extends TransformExecutor implements ClassDefiner
                             continue;
                         }
 
-                        byte[] bytes = Utils.readAllBytes(source);
+                        byte[] bytes = IOUtils.readAllBytes(source);
                         bytes = transform(className, bytes);
                         output.putNextEntry(new JarEntry(entry.getName()));
                         output.write(bytes);
