@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spigotlauncher-parent</artifactId>
         <groupId>com.github.mouse0w0</groupId>
-        <version>0.3.1-beta-beta</version>
+        <version>0.3.1-beta</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,8 +15,8 @@
     <dependencies>
         <dependency>
             <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-all</artifactId>
-            <version>5.2</version>
+            <artifactId>asm-commons</artifactId>
+            <version>7.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spigotlauncher-parent</artifactId>
         <groupId>com.github.mouse0w0</groupId>
-        <version>0.3.1-beta-beta</version>
+        <version>0.3.1-beta</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,9 +14,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-all</artifactId>
-            <version>5.2</version>
+            <groupId>com.github.mouse0w0</groupId>
+            <artifactId>spigotlauncher-api</artifactId>
+            <version>0.3.1-beta</version>
         </dependency>
         <dependency>
             <groupId>net.sf.jopt-simple</groupId>
@@ -32,11 +32,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.mouse0w0</groupId>
-            <artifactId>spigotlauncher-api</artifactId>
-            <version>0.3.1-beta-beta</version>
         </dependency>
     </dependencies>
 
