@@ -1,13 +1,12 @@
 package spigotlauncher.plugin;
 
-import java.nio.file.Path;
-import java.util.List;
-
 import com.github.mouse0w0.version.ComparableVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import spigotlauncher.api.plugin.CorePlugin;
+
+import java.nio.file.Path;
+import java.util.List;
 
 public class PluginContainer {
 

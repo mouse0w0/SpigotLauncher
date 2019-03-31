@@ -2,14 +2,15 @@ package spigotlauncher;
 
 import spigotlauncher.api.ClassDefiner;
 import spigotlauncher.api.util.IOUtils;
-import spigotlauncher.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;

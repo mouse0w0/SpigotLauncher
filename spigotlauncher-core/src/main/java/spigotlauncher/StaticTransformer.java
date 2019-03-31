@@ -72,7 +72,7 @@ public class StaticTransformer extends TransformExecutor implements ClassDefiner
     @Override
     public void define(String name, byte[] b, int off, int len) {
         try {
-            output.putNextEntry(new JarEntry(name.replace(".","/").concat(".class")));
+            output.putNextEntry(new JarEntry(name.replace(".", "/").concat(".class")));
             output.write(b, off, len);
         } catch (IOException e) {
             Launch.getLogger().error("Cannot define class.", e);

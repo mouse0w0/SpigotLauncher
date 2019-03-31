@@ -1,6 +1,23 @@
 package spigotlauncher;
 
-import java.io.*;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import spigotlauncher.api.ClassDefiner;
+import spigotlauncher.api.Platform;
+import spigotlauncher.api.PlatformProvider;
+import spigotlauncher.plugin.PluginContainer;
+import spigotlauncher.plugin.PluginLoader;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,24 +26,6 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
-
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-import spigotlauncher.api.ClassDefiner;
-import spigotlauncher.api.Platform;
-import spigotlauncher.api.PlatformProvider;
-import spigotlauncher.plugin.PluginContainer;
-import spigotlauncher.plugin.PluginLoader;
-import spigotlauncher.util.Utils;
 
 public final class Launch {
 

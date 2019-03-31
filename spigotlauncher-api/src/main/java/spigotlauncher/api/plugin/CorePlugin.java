@@ -8,11 +8,11 @@ import java.util.List;
 
 public interface CorePlugin {
 
-	void initialize(ClassDefiner classDefiner);
-	
-	void acceptOptions(List<String> args, Path serverDir);
-	
-	Collection<Transformer> getTransformers();
+    void initialize(ClassDefiner classDefiner);
 
-	String[] getLaunchArguments();
+    void acceptOptions(List<String> args, Path serverDir);
+
+    Collection<Transformer> getTransformers();
+
+    String[] getLaunchArguments();
 }

@@ -1,21 +1,20 @@
 package spigotlauncher.plugin;
 
+import com.github.mouse0w0.version.ComparableVersion;
+import spigotlauncher.Launch;
+import spigotlauncher.api.plugin.CorePlugin;
+
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
-
-import com.github.mouse0w0.version.ComparableVersion;
-import spigotlauncher.Launch;
-import spigotlauncher.api.plugin.CorePlugin;
 
 public class PluginLoader {
 
