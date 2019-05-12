@@ -9,10 +9,10 @@ import java.util.List;
 
 public class TransformExecutor {
 
-    protected final List<String> excludedTransformPackages = new LinkedList<>();
-    protected final List<String> includedTransformPackages = new LinkedList<>();
+    public final List<String> excludedTransformPackages = new LinkedList<>();
+    public final List<String> includedTransformPackages = new LinkedList<>();
 
-    protected final List<Transformer> transformers = new LinkedList<>();
+    private final List<Transformer> transformers = new LinkedList<>();
 
     public TransformExecutor() {
         excludedTransformPackages.add("org.bukkit.craftbukkit.libs.");
